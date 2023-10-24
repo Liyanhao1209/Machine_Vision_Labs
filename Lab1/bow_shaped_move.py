@@ -25,9 +25,9 @@ def stop():
     set_velocity.publish(0, 0, 0)  # stop
 
 
-def activity(linV, directA, yawR):
-    # publish a chassis control msg, with linear velocity 60，direction angle 90，yaw rate 0(<0，clockwise)
-    set_velocity.publish(linV, directA, yawR)
+# def activity(linV, directA, yawR):
+#     # publish a chassis control msg, with linear velocity 60，direction angle 90，yaw rate 0(<0，clockwise)
+#     set_velocity.publish(linV, directA, yawR)
 
 
 if __name__ == '__main__':
@@ -39,30 +39,33 @@ if __name__ == '__main__':
 
     # the corresponding offset ticks for the chassis control
     # forward->turn right->forward->turn right->forward->turn left->forward->turn left->forward->turn right->forward
-    ticks = [4.0, 1.0, 2.0, 1.0, 4.0, 1.0, 2.0, 1.0, 4.0, 1.0, 2.0]
+    ticks = [8.0, 1.3, 8.0, 1.3, 8.0, 1.3, 8.0, 1.3, 8.0, 1.3, 8.0,1.3,5.656,1.3]
     args = [
-        [60, 90, 0],
-        [0, 90, -0.3],
-        [60, 90, 0],
-        [0, 90, -0.3],
-        [60, 90, 0],
-        [0, 90, 0.3],
-        [60, 90, 0],
-        [0, 90, 0.3],
-        [60, 90, 0],
-        [0, 90, -0.3],
-        [60, 90, 0]
+        [60.0, 90.0, 0.0],
+        [0.0, 90.0, -0.55],
+        [60.0, 90.0, 0.0],
+        [0.0, 90.0, -0.55],
+        [60.0, 90.0, 0.0],
+        [0.0, 90.0, 0.55],
+        [60.0, 90.0, 0.0],
+        [0.0, 90.0, 0.55],
+        [60.0, 90.0, 0.0],
+        [0.0, 90.0, -0.55],
+        [60.0, 90.0, 0.0],
+        [0.0,90.0,-0.83],
+        [60.0,90.0,0.0],
+        [0.0,90.0,-1.375]
     ]
 
     # without interrupt from the keyboard,do the routes
     route_steps_len = len(ticks)
-    while start & cur_i < route_steps_len:
+    while start and cur_i < route_steps_len:
         # get tick
         fin_tick = ticks[cur_i]
         # get args
         arg = args[cur_i]
         # act
-        activity(args[0], args[1], args[2])
+        set_velocity.publish(arg[0], arg[1], arg[2])
         # inc offset_ticks
         offset_ticks += 1
         # next route?
@@ -70,11 +73,6 @@ if __name__ == '__main__':
             cur_i += 1
             offset_ticks = 0
         # actual tick inc
-        rospy.sleep(1)
-
-    # spin rotation until interrupt from the keyboard
-    while start:
-        activity(0, 90, -0.3)
         rospy.sleep(1)
 
     set_velocity.publish(0, 0, 0)  # stop
