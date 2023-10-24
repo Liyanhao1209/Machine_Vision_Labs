@@ -25,27 +25,9 @@ def stop():
     set_velocity.publish(0, 0, 0)  # stop
 
 
-def forward():
+def activity(linV, directA, yawR):
     # publish a chassis control msg, with linear velocity 60，direction angle 90，yaw rate 0(<0，clockwise)
-    set_velocity.publish(60, 90, 0)
-
-
-def backward():
-    set_velocity.publish(60, -90, 0)
-
-    # TODO: Finish the rightward,the leftward and the turn-around function
-
-
-def rightward():
-    set_velocity.publish()
-
-
-def leftward():
-    set_velocity.publish()
-
-
-def turnAround():
-    set_velocity.publish()
+    set_velocity.publish(linV, directA, yawR)
 
 
 if __name__ == '__main__':
@@ -56,19 +38,31 @@ if __name__ == '__main__':
     set_velocity = rospy.Publisher('/chassis_control/set_velocity', SetVelocity, queue_size=1)
 
     # the corresponding offset ticks for the chassis control
-    # right->forward->left->forward->right->forward->turn around
-    ticks = [4.0, 2.0, 4.0, 2.0, 4.0, 2.0]
-    route = [rightward, forward, leftward, forward, rightward, forward]
+    # forward->turn right->forward->turn right->forward->turn left->forward->turn left->forward->turn right->forward
+    ticks = [4.0, 1.0, 2.0, 1.0, 4.0, 1.0, 2.0, 1.0, 4.0, 1.0, 2.0]
+    args = [
+        [60, 90, 0],
+        [0, 90, -0.3],
+        [60, 90, 0],
+        [0, 90, -0.3],
+        [60, 90, 0],
+        [0, 90, 0.3],
+        [60, 90, 0],
+        [0, 90, 0.3],
+        [60, 90, 0],
+        [0, 90, -0.3],
+        [60, 90, 0]
+    ]
 
     # without interrupt from the keyboard,do the routes
     route_steps_len = len(ticks)
     while start & cur_i < route_steps_len:
         # get tick
         fin_tick = ticks[cur_i]
-        # get route
-        action = route[cur_i]
+        # get args
+        arg = args[cur_i]
         # act
-        action()
+        activity(args[0], args[1], args[2])
         # inc offset_ticks
         offset_ticks += 1
         # next route?
@@ -80,7 +74,7 @@ if __name__ == '__main__':
 
     # spin rotation until interrupt from the keyboard
     while start:
-        turnAround()
+        activity(0, 90, -0.3)
         rospy.sleep(1)
 
     set_velocity.publish(0, 0, 0)  # stop
