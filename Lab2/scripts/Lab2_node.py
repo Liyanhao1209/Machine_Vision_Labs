@@ -69,7 +69,7 @@ heartbeat_timer = None
 
 def run(msg):
     global lock
-    global detect_color,color_center_x,color_center_y
+    global color_center_x,color_center_y
     global arm_x, arm_y
     global chassis_move
 
@@ -138,8 +138,12 @@ def move():
     global chassis_move
     global color_list, target_color_index
     global color_center_x,color_center_y
+    global __isRunning
 
     while __isRunning:
+        if target_color_index == 0:
+            __isRunning = False
+            break
         if detect_step == 'tracking':
             # the car is near the cube and has stopped
             if not chassis_move:
@@ -199,7 +203,7 @@ def move():
 
                     if stable:  # grab
                         offset_y = Misc.map(target[2], -180, -150, -0.03, 0.03)
-                        set_rgb(detect_color)  # set rgb LED
+                        set_rgb(color_list[target_color_index])  # set rgb LED
                         buzzer_pub.publish(0.1)  # buzzer
 
                         bus_servo_control.set_servos(joints_pub, 500, ((1, 120),))  # open claw
@@ -271,11 +275,9 @@ def move():
                     bus_servo_control.set_servos(joints_pub, 1500, ((6, 500),))
                     rospy.sleep(1.5)
                     detect_step = 'tracking'
-                    target_color_index += 1 # next color
+                    target_color_index = (target_color_index+1) % len(color_list)  # next color
             else:
                 rospy.sleep(0.1)
-
-
 
 def init():
     rospy.loginfo("intelligent transport Init")
@@ -289,7 +291,35 @@ def initMove(delay=True):
         rospy.sleep(2)
 
 def reset():
+    global x_dis,y_dis
+    global stable
+    global set_visual,detect_step
+    global chassis_move
+    global color_center_x,color_center_y
+    global x_pid,y_pid,arm_x_pid,arm_y_pid,color_x_pid,color_y_pid
+    global arm_x, arm_y
+    global target_color_index
 
+    with lock:
+        x_pid.clear()
+        y_pid.clear()
+        arm_x_pid.clear()
+        arm_y_pid.clear()
+        color_x_pid.clear()
+        color_y_pid.clear()
+        off_rgb()
+        set_visual = 'tag'
+        detect_step = 'tracking'
+        stable = False
+        chassis_move = False
+        x_dis = 500
+        y_dis = 0.15
+        color_center_x = 0
+        color_center_y = 0
+        set_velocity.publish(0, 90, 0)
+        arm_x = Arm_X
+        arm_y = Arm_Y
+        target_color_index = 1
 
 def off_rgb():
     led = Led()
@@ -322,6 +352,33 @@ def set_running(msg):
         stop_running()
 
     return [True, 'set_running']
+
+
+def stop_running():
+    global lock
+    global __isRunning
+
+    rospy.loginfo("stop running intelligent transport")
+    with lock:
+        reset()
+        __isRunning = False
+        initMove(delay=False)
+        set_velocity.publish(0, 0, 0)
+        rospy.ServiceProxy('/visual_processing/set_running', SetParam)()
+
+def start_running():
+    global lock
+    global __isRunning
+
+    rospy.loginfo("start running Lab2")
+    with lock:
+        init()
+        __isRunning = True
+        rospy.sleep(0.1)
+        # 运行子线程
+        th = Thread(target=move)
+        th.setDaemon(True)
+        th.start()
 
 # enter service
 def enter_func(msg):

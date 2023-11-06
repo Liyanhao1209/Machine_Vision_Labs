@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     # the corresponding offset ticks for the chassis control
     # forward->turn right->forward->turn right->forward->turn left->forward->turn left->forward->turn right->forward
-    ticks = [8.0, 1.3, 8.0, 1.3, 8.0, 1.3, 8.0, 1.3, 8.0, 1.3, 8.0,1.3,5.656,1.3]
+    ticks = [8.0, 1.3, 8.0, 1.3, 8.0, 1.3, 8.0, 1.3, 8.0, 1.3, 8.0, 1.3, 5.656, 1.3]
     args = [
         [60.0, 90.0, 0.0],
         [0.0, 90.0, -0.55],
@@ -52,9 +52,9 @@ if __name__ == '__main__':
         [60.0, 90.0, 0.0],
         [0.0, 90.0, -0.55],
         [60.0, 90.0, 0.0],
-        [0.0,90.0,-0.83],
-        [60.0,90.0,0.0],
-        [0.0,90.0,-1.375]
+        [0.0, 90.0, -0.83],
+        [60.0, 90.0, 0.0],
+        [0.0, 90.0, -1.375]
     ]
 
     # without interrupt from the keyboard,do the routes
