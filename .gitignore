@@ -2,3 +2,4 @@ venv
 .idea
 main.py
 temp
+cmake-build-debug
