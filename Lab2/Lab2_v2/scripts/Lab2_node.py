@@ -60,9 +60,12 @@ def run(msg):
     global x_dis, y_dis
     global num
 
+
     center_x = msg.center_x
     center_y = msg.center_y
     num = 0
+
+    rospy.loginfo("center_x = %f,center_y = %f",center_x,center_y)
 
     if steps[cur_step] == 'grasp' or steps[cur_step] == 'place':
         diff_x = abs(center_x - centreX)
@@ -116,6 +119,7 @@ def move():
     global stable,arm_move
     global offset_y
     global __isRunning
+    global target_color
 
     while __isRunning:
         # forward to the target
